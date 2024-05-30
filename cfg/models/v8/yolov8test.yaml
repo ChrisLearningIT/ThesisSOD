@@ -1,0 +1,50 @@
+# Example YOLOv8 YAML configuration with additional convolutional blocks
+
+nc: 80  # number of classes
+
+# Model compound scaling constants
+scales:
+  n: [0.33, 0.25, 1024]  # YOLOv8n
+  # ... other scales ...
+
+# Backbone configuration with additional convolutional blocks
+backbone:
+  # New convolutional blocks
+  - [-1, 1, Conv, [3, 32, 3, 1]] #0
+  - [-1, 1, Conv, [32, 32, 3, 1]] #1
+  - [-1, 1, Conv, [32, 32, 3, 1]] #2
+  - [-1, 3, C2f, [64, True]] #3
+
+
+  # Original YOLOv8 backbone layers, but adjusted to dimensions 
+  - [-1, 1, Conv, [32, 64, 3, 2]]  #4  
+  - [-1, 1, Conv, [64, 128, 3, 2]] #5
+  - [-1, 3, C2f, [128, True]] #6
+  - [-1, 1, Conv, [128, 256, 3, 2]] #7
+  - [-1, 6, C2f, [256, True]] #8
+  - [-1, 1, Conv, [256, 512, 3, 2]] #9
+  - [-1, 6, C2f, [512, True]] #10
+  - [-1, 1, Conv, [512, 1024, 3, 2]] #11
+  - [-1, 3, C2f, [1024, True]] #12
+  - [-1, 1, SPPF, [1024, 512, 5]] #13
+
+# Head configuration
+head:
+  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] #14
+  - [[-1, 10], 1, Concat, [1]] #15
+  - [-1, 3, C2f, [512]] #16
+
+  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] #17
+  - [[-1, 8], 1, Concat, [1]] #18
+  - [-1, 3, C2f, [512]] #19
+
+  - [-1, 1, Conv, [512, 1024, 3, 2]] #20
+  - [[-1, 16], 1, Concat, [1]] #21
+  - [-1, 3, C2f, [1024]] #22
+
+  - [-1, 1, Conv, [1024, 2048, 3, 2]] #23
+  - [[-1, 13], 1, Concat, [1]] #24
+  - [-1, 3, C2f, [2048]] #25
+
+  - [[19, 22, 25], 1, Detect, [nc]] #26
+
